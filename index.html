@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>流程</title>
+		<link rel="stylesheet" type="text/css" href="css/global.css"/>
+		<script src="js/jquery-1.9.1.js"></script>
+		<script src="js/global.js"></script>
+	</head>
+	<body>
+		<div id="designer_header">
+			<div class="row-1">
+				<a class="row" href="http://erp.tover.group/" title="返回">返回</a>
+				<div class="row">
+					<div id="title_container">
+						<span class="diagram_title">未命名文件</span>
+					</div>
+				</div>
+			</div>
+			<div class="row-2">
+				<ul>
+					<li>保存</li>
+					<li>文件</li>
+					<li>视图</li>
+				</ul>
+			</div>
+		</div>
+		<div id="designer">
+			<div id="shape_panel">
+				<div class="panel_container">
+					<h3 class="panel_title"><div class="ico ico_accordion"></div>基础图形</h3>
+					<div id="panel_basic" class="content" shapename="text">
+						<div class="panel_box" shapename="text"><canvas id="test" class="panel_item" width="30" height="30"></canvas></div>
+						<div class="panel_box" shapename="note"><canvas class="panel_item" width="30" height="30"></canvas></div>
+						<div class="panel_box" shapename="round"><canvas class="panel_item" width="30" height="30"></canvas></div>
+						<div class="panel_box" shapename="rectangle"><canvas class="panel_item" width="30" height="30"></canvas></div>
+						<div class="panel_box" shapename="braces"><canvas class="panel_item" width="30" height="30"></canvas></div>
+						<div class="panel_box" shapename="parentheses"><canvas class="panel_item" width="30" height="30"></canvas></div>
+						<div class="panel_box" shapename="rightBrace"><canvas class="panel_item" width="30" height="30"></canvas></div>
+						<div class="panel_box" shapename="leftBrace"><canvas class="panel_item" width="30" height="30"></canvas></div>
+					</div>
+				</div>
+			</div>
+			<div id="designer_viewport">
+				<div id="designer_layout" class="layout" style="height: 500px;">
+					<div id="canvas_container" style="width: 1050px; height: 1000px; padding: 1000px; cursor: default;">
+						<div id="designer_canvas" style="background-color: rgb(242, 242, 242);">
+							<canvas id="designer_grids" width="1050" height="1000"></canvas>
+						</div>
+					</div>
+					<div id="shape_img_container"></div>
+					<div id="layout_block"></div>
+				</div>
+				<div id="shape_thumb" class="menu">
+					<canvas width="180" height="100"></canvas>
+				</div>
+			</div>
+			<div id="creating_shape_container">
+				<canvas id="creating_shape_canvas" width="30" height="30"></canvas>
+			</div>
+		</div>
+	</body>
+</html>

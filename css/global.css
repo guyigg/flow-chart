@@ -1,0 +1,230 @@
+/*base style*/
+body,
+html {
+	background: #f0f0f0;
+	color: #000;
+	font: normal 13px arial, Microsoft Yahei!important;
+	margin: 0;
+	overflow: hidden;
+	height: 100%;
+	-webkit-font-smoothing: antialiased;
+	font-family: "微软雅黑";
+}
+ol,
+ul {
+	margin: 0;
+	padding: 0;
+	list-style: none
+}
+a {
+	font-size: inherit;
+	text-decoration: none;
+	color: #666;
+	cursor: pointer
+}
+select {
+	cursor: pointer
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	margin: 0
+}
+div,
+input,
+textarea,
+ul {
+	resize: none;
+	outline: 0;
+	font-size: inherit
+}
+.ico{
+	background: url(../img/sprite.png) no-repeat;
+	height: 20px;
+	width: 20px;
+}
+/* head  style*/
+#designer_header .row-1 .row{
+	float: left;
+	text-align: center;
+	font: 14px/1.5rem "微软雅黑";
+}
+#designer_header .row-1:after{
+	content: "";
+	display: block;
+	clear: both;
+}
+#designer_header{
+	padding: 10px;
+	border-bottom: 1px solid #cbcccc;
+}
+#designer_header a {
+	display: block;
+	width: 50px;
+	text-align: center;
+}
+#designer_header .row-2{
+	padding-left: 10px;
+}
+#designer_header .row-2 ul li{
+	float: left;
+	padding: 10px;
+	font-size:14px ;
+}
+#designer_header .row-2 ul:after{
+	content: "";
+	clear: both;
+	display: block;
+}
+#designer {
+    width: 100%;
+    position: relative;
+}
+#shape_panel {
+    width: 162px;
+    overflow: hidden;
+    overflow-y: auto;
+    position: absolute;
+    background: #F6F6F6;
+    border-right: 1px solid #A2A2A2;
+}
+.panel_container {
+    border-bottom: 1px solid #CBCCCC;
+    margin-top: 1px;
+}
+.ico_accordion{
+	width: 8px;
+	height: 8px;
+	background-position: -40px -47px;
+}
+.panel_title{
+	position: relative;
+    margin: 0;
+    background-color: #F3F3F3;
+    height: 30px;
+    line-height: 30px;
+    font-size: 12px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    padding: 0 2px 0 19px;
+    border-bottom: #cccccc solid 1px;
+    cursor: default;
+    -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.1);
+    -moz-box-shadow: 0 1px 1px rgba(0,0,0,.1);
+    /*-ms-box-shadow: 0 1px 1px rgba(0,0,0,.1);*/
+    box-shadow: 0 1px 1px rgba(0,0,0,.1);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.33);
+}
+.panel_title .ico_accordion {
+    position: absolute;
+    left: 5px;
+    top: 11px;
+}
+.panel_container .content {
+    margin:0 auto;
+    width: 150px;
+}
+.panel_box {
+    display: inline-block;
+    border: 2px solid transparent;
+    position: relative;
+}
+.panel_item {
+    margin: 2px auto;
+    width: 30px;
+    height: 30px;
+}
+#designer_viewport {
+    position: relative;
+    margin-left: 163px;
+}
+#designer_layout {
+    overflow: scroll;
+    position: relative;
+    background: url(../img/canvas_bg.jpg) repeat;
+    z-index: 0;
+}
+#designer_canvas {
+    position: relative;
+    background: #F2F2F2;
+    overflow: visible;
+    box-shadow: 3px 3px 6px #888;
+    z-index: 0;
+}
+#creating_shape_container {
+    overflow: hidden;
+    position: absolute;
+    display: none;
+}
+#creating_shape_canvas {
+    position: absolute;
+}
+.shape_box{
+    position: absolute;
+}
+.text_canvas{
+    position: absolute;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: inherit;
+    overflow: hidden;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    /*-khtml-user-select: none;*/
+    user-select: none;
+    resize: none;
+}
+.text_canvas{
+    line-height: 16px;
+    font-size: 13px;
+    font-family: "微软雅黑";
+    font-weight: normal;
+    font-style: normal;
+    text-align: center;
+    color: rgb(50, 50, 50);
+    text-decoration: none;
+    opacity: 1;
+    width: 50px;
+    height: 16px;
+    left: 20px;
+    top: 37px;
+    transform: rotate(0deg) scale(1);
+}
+.shape_contour{
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 0;
+}
+/*滚动条样式*/
+::-webkit-scrollbar-thumb {
+    border-width: 2px;
+    border-style: solid;
+    border-color: #fff;
+    border-radius: 6px;
+    background-color: #c6c6c6;
+}
+::-webkit-scrollbar-thumb {
+    border-width: 1px;
+    border-style: solid;
+    border-color: #fff;
+    border-radius: 6px;
+    background: #c9c9c9;
+}
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+    background: white;
+    border-left: 1px solid #e8e8e8;
+}
