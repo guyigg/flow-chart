@@ -1,13 +1,15 @@
 window.onload=function(){
     //左边图形初始化数据
-    var shapename=[{
+    var shapeName=[{
         name:"text",
         srcImg:"img/text.png",
         text:'文本',
         props:{
             w:160,
             h:40
-        }
+        },
+        connect:false,
+        connectCircle:"none"
     },{
         name:"note",
         srcImg:"img/note.png",
@@ -15,7 +17,9 @@ window.onload=function(){
         props:{
             w:80,
             h:100
-        }
+        },
+        connect:false,
+        connectCircle:"none"
     },{
         name:"round",
         srcImg:"img/round.png",
@@ -23,6 +27,27 @@ window.onload=function(){
         props:{
             w:70,
             h:70
+        },
+        connect:true,
+        connectCircle:function(w,h){
+        	var differ = 4;
+        	return [{
+        		left:-differ,
+        		top:(h-26)/2
+        		},
+        		{
+        		left:w-20-differ,
+        		top:(h-26)/2
+        		},
+        		{
+        		left:(w-26)/2,
+        		top:-differ
+        		},
+        		{
+        		left:(w-26)/2,
+        		top:h-20-differ
+        		}
+        	]
         }
     },{
         name:"rectangle",
@@ -31,6 +56,27 @@ window.onload=function(){
         props:{
             w:100,
             h:70
+        },
+        connect:true,
+        connectCircle:function(w,h){
+        	var differ = 4;
+        	return [{
+        		left:-differ,
+        		top:(h-26)/2
+        		},
+        		{
+        		left:w-20-differ,
+        		top:(h-26)/2
+        		},
+        		{
+        		left:(w-26)/2,
+        		top:-differ
+        		},
+        		{
+        		left:(w-26)/2,
+        		top:h-20-differ
+        		}
+        	]
         }
     },{
         name:"braces",
@@ -39,6 +85,19 @@ window.onload=function(){
         props:{
             w:200,
             h:100
+        },
+        connect:true,
+        connectCircle:function(w,h){
+        	var differ = 4;
+        	return [{
+        		left:-differ,
+        		top:(h-26)/2
+        		},
+        		{
+        		left:w-20-differ,
+        		top:(h-26)/2
+        		}
+        	]
         }
     },{
         name:"parentheses",
@@ -47,6 +106,19 @@ window.onload=function(){
         props:{
             w:200,
             h:140
+        },
+        connect:true,
+        connectCircle:function(w,h){
+        	var differ = 4;
+        	return [{
+        		left:-differ,
+        		top:(h-26)/2
+        		},
+        		{
+        		left:w-20-differ,
+        		top:(h-26)/2
+        		}
+        	]
         }
     },{
         name:"rightBrace",
@@ -55,7 +127,9 @@ window.onload=function(){
         props:{
             w:100,
             h:140
-        }
+        },
+        connect:false,
+        connectCircle:"none"
     },{
         name:"leftBrace",
         srcImg:"img/leftBrace.png",
@@ -63,7 +137,9 @@ window.onload=function(){
         props:{
             w:100,
             h:140
-        }
+        },
+        connect:false,
+        connectCircle:"none"
     }
     ];
     var designer_canvas = document.getElementById('designer_canvas');
@@ -136,123 +212,212 @@ window.onload=function(){
         };
     };
 
-
+	//var arrBox = [];//储存所有self.shape_contour和对于的圆圈div
     //画布操作构造函数
     function InitDraw(){
-        var self = this;
-        var designer = document.getElementById('designer');//整个操作区域
+        this.shape_box = null,
+        this.shape_contour = null,
+        this._canvas = null,
+        this.zindex = 1,
+        this.divW = null,
+        this.divH = null,
+        this.att = null,
+        this.arrBox = [];
+        this.leftDrag();
+    }
+    //鼠标移入移出
+    InitDraw.prototype.parentMove = function(obj,objFun){
+    	var self = this;
+    	$(obj).on('mousemove',function(ev){
+    		var ev = ev || event;
+    		var disX = ev.clientX;
+    		var disY = ev.clientY;
+    		var left = $(this).offset().left;
+	    	var top = $(this).offset().top;
+	    	var width = $(this).width();
+	    	var height = $(this).height();
+    		if((disX > left+14 && disX < left-14+width) && (disY > top+14 && disY < top-14+height)){
+    			$('#canvas_container').css('cursor','move');
+  				self.drag(obj,objFun); //图形和圆圈绑定拖拽事件
+    		}else if((disX > left+9 && disX < left-9+width) && (disY > top+9 && disY < top-9+height)){
+    			$('#canvas_container').css('cursor','crosshair');
+    			obj.unbind('mousedown');
+    		}else{
+    			$('#canvas_container').css('cursor','default');
+    		}
+    		if($('.shape_contour').length > 1){
+    			$('.shape_contour').each(function(){
+    				if($(this).attr('forshape') == $(obj).attr('id')){
+	    				$(this).show();
+	    			}
+    			})
+    		}
+    	});
+    	$('.shape_contour').on('mouseover',function(){
+    		$(this).show();
+    		$('#canvas_container').css('cursor','crosshair');
+    	})
+    	$(obj).on('mouseout',function(){
+    		$('#canvas_container').css('cursor','default');
+    		if($('.shape_contour').length > 1){
+    			$('.shape_contour').each(function(){
+    				if($(this).attr('forshape') != self.shape_contour.attr('forshape')){
+	    				$(this).hide();
+	    			}
+    			})
+    		}
+    	})
+    }
+    
+    //左边拖动操作
+    InitDraw.prototype.leftDrag = function(){
+    	var self = this;
+    	var designer = document.getElementById('designer');//整个操作区域
         var h = visualH - headerH - 2; //操作区域的可视高度
         var panel_box = $('#panel_basic').children('.panel_box');//左边图形列表
+        
         $('#shape_panel').css('height',h+'px');
         panel_box.each(function(){
-            for(var i in shapename){
-                if($(this).attr('shapename') == shapename[i].name){
-                    self.drawImg($(this).children()[0],shapename[i].srcImg);
+            for(var i in shapeName){
+                if($(this).attr('shapename') == shapeName[i].name){
+                    drawImg($(this).children()[0],shapeName[i].srcImg);
                 }
-            };
+            }
         });
-        $('#designer').on('mousedown','#shape_panel .panel_box',function(ev){
+        
+    	$('#designer').on('mousedown','#shape_panel .panel_box',function(ev){
             var ev = ev || event;
             var thisBox = $(this);
             var parentW = thisBox.parents('#shape_panel').width();
             var parentH = thisBox.parents('#shape_panel').height();
             var layoutNewH = $('#designer_layout').scrollTop();//layout当前滚动距离顶部高度
             var layoutNewW = $('#designer_layout').scrollLeft();//layout当前滚动距离左边宽度
-            var differH = designer_canvas.offsetTop - layoutNewH + headerH;//当前layout距离可是区距离
+            var differH = designer_canvas.offsetTop - layoutNewH + headerH;//当前layout距离可视区距离
             var differW = designer_canvas.offsetLeft - layoutNewW + parentW;
             var l = thisBox[0].offsetLeft;
             var t = thisBox[0].offsetTop;
             var disX = ev.clientX - l;
             var disY = ev.clientY - t;
+            
             self.drawDragCanva($("#creating_shape_canvas")[0],thisBox.children()[0]);
             $('#creating_shape_container').css({'display':'block','top':'0','left':'0','width':parentW+'px','height':parentH+'px'});
             $('#creating_shape_canvas').css({'left':l+'px','top':t+'px'});
+            
             var off = true;
-            var shape_box = self.drawDiv();
-            var _canvas = self.drawCanvas(thisBox.attr('shapename'));
-            shape_box.append(_canvas);
-            shape_box.css({'width':_canvas.width+'px','height':_canvas.height+'px'});
-            var dW = shape_box.width();
-            var dH = shape_box.height();
-            var funDiv = self.funDiv(shape_box.attr('id'));
+            self.drawDiv();//生成shape_box
+            self.drawCanvas(thisBox.attr('shapename'));//生成_canvas
+            self.shape_box.css({'width':self._canvas.width+'px','height':self._canvas.height+'px'});
+            var dW = self.shape_box.width();
+            var dH = self.shape_box.height();
+            
             designer.onmousemove=function(ev){
                 var ev = ev || event;
                 var L = ev.clientX - disX;
                 var T = ev.clientY - disY;
                 $('#creating_shape_canvas').css({'left':L+'px','top':T+'px'});
                 if(ev.clientX > parentW){
-                    var divH = Math.round(layoutNewH)-_layoutInitH>=0 ? ev.clientY-headerH-10-dH/2 : ev.clientY-differH-dH/2;
-                    var divW = Math.round(layoutNewW)-_layoutInitW>=0 ? ev.clientX-parentW-10-dW/2 : ev.clientX-differW-dH/2;
-                    shape_box.css({'left':divW + 'px','top':divH + 'px'});
+                	self.divH = Math.round(layoutNewH)-_layoutInitH>=0 ? ev.clientY-headerH-10-dH/2 : ev.clientY-differH-dH/2;
+                	self.divW = Math.round(layoutNewW)-_layoutInitW>=0 ? ev.clientX-parentW-10-dW/2 : ev.clientX-differW-dH/2;
+                    self.shape_box.css({'left':self.divW + 'px','top':self.divH + 'px'});
+                    self.shape_box.attr({'divW':self.divW,'divH':self.divH});
                     if(off){
-                        $('#designer_canvas').append(shape_box);
+                        $('#designer_canvas').append(self.shape_box);
                         off = !off;
                     }
-                };
+                }
             };
-
             document.onmouseup = function(ev){
                 var ev = ev || event;
+                var obj = {};
                 if(!off){
                     if(ev.clientX < parentW || ev.clientY < headerH || ev.clientX > visualW-10 || ev.clientY > visualH-10){
-                        shape_box.remove();
+                        self.shape_box.remove();
                     }else{
-                        self.drag(shape_box[0]);
-                        $('#designer_canvas').append(funDiv);
-                        console.log($('.shape_contour'));
+                  		self.shape_box.css({'z-index':self.zindex ++});
+                    	self.shape_contour = self.funDiv(self.shape_box.attr('id'),dW,dH,self.divW,self.divH);//生成连线圆圈功能div
+                    	$('#designer_canvas').append(self.shape_contour);//添加圆圈div
+                        self.parentMove(self.shape_box,self.shape_contour);//绑定鼠标移入移除效果
+                        if($('.shape_contour').length > 0){//判断shape_contour是否为当前shape_box相对应的
+                        	$('.shape_contour').each(function(){
+                        		if($(this).attr('forshape') != self.shape_box.attr('id')){
+                        			$(this).hide();
+                        		}
+                        	})
+                        }
+                        
                     }
-                };
+                }
                 $('#creating_shape_container').css({'display':'none'});
                 designer.onmousemove = null;
                 off = true;
             }
             return false;//阻止文字默认拖拽事件触发
         });
-
-    };
-
+    }
     //画布内拖拽
-    InitDraw.prototype.drag = function(obj){
-        obj.onmousedown = function(ev){
-            var ev = ev || event;
-            var disX = ev.clientX - this.offsetLeft;
+    InitDraw.prototype.drag = function(obj,objFun){
+       	obj.on('mousedown',function(ev){
+        	var ev = ev || event;
+        	var disX = ev.clientX - this.offsetLeft;
             var disY = ev.clientY - this.offsetTop;
-            document.onmousemove = function(ev){
-                var ev = ev || event;
+            $(document).on('mousemove',function(ev){
+            	var ev = ev || event;
                 var L = ev.clientX - disX;
                 var T = ev.clientY - disY;
-                obj.style.left = L+'px';
-                obj.style.top = T+'px';
-            }
-            document.onmouseup = function(){
-                document.onmousemove = null;
-            }
-        }
+                obj.css({'left':L,'top':T});
+                objFun.css({'left':L+10,'top':T+10});
+            })
+            $(document).on('mouseup',function(){
+            	obj.off('mousedown');
+            	$(document).off('mousemove');
+            	objFun.show().siblings('.shape_contour').hide();
+//          	if($('.shape_contour').length > 1){
+//	    			$('.shape_contour').each(function(){
+//	    				//$('.shape_contour').hide();
+//	    				if($(this).attr('forshape') == $(obj).attr('id')){
+//		    				$(this).show();
+//		    			}
+//	    			})
+//	    		}
+            })
+            return false; //阻止文字默认拖拽
+        })
     }
     //生成图形div
     InitDraw.prototype.drawDiv = function(){
         var id = uuid();
-        var $div = $('<div id='+id+' class="shape_box"><textarea class="text_canvas" forshape="'+id+'" readonly="readonly"></textarea></div>');
-        return $div;
-    };
+        this.shape_box = $('<div id='+id+' class="shape_box"><textarea class="text_canvas" forshape="'+id+'" >123</textarea></div>');
+    }
     //生成连线圆圈功能div
-    InitDraw.prototype.funDiv = function(id){
-        var $div = $('<div class="shape_contour" forshape="'+id+'"></div>');
-        return $div;
-    };
+    InitDraw.prototype.funDiv = function(id,w,h,l,t){
+        oDiv = $('<div class="shape_contour" forshape="'+id+'"></div>');
+        oDiv.css({'left':(Number(l) + 10) + 'px','top':(Number(t) + 10) +'px','z-index':this.zindex});
+        var arr = [];
+        var elem = null;
+    	for(var i in shapeName){
+    		if(shapeName[i].connect == true && shapeName[i].name == this.att){
+	    		arr = shapeName[i].connectCircle(w,h);
+	    		for(var j = 0;j < arr.length; j ++){
+			    	elem = $('<div class="shape_anchor"></div>');
+			    	elem.css({'left':arr[j].left,'top':arr[j].top,'z-index':this.zindex});
+			        oDiv.append(elem);
+			    }
+    		}
+    	}
+    	return oDiv;
+    }
     //生成canvas
-    InitDraw.prototype.drawCanvas = function(attr,text){
-        var _text = text || '';
+    InitDraw.prototype.drawCanvas = function(att){
+    	this.att = att;
         var obj = document.createElement('canvas');
-        for(var i in shapename){
-            if(shapename[i].name == attr ){
-                obj.width = shapename[i].props.w+20;
-                obj.height = shapename[i].props.h+20;
-                var wt = shapename[i].props.w;
-                var ht = shapename[i].props.h;
-                _text = shapename[i].text;
+        for(var i in shapeName){
+            if(shapeName[i].name == att ){
+                obj.width = shapeName[i].props.w+20;
+                obj.height = shapeName[i].props.h+20;
+                var wt = shapeName[i].props.w;
+                var ht = shapeName[i].props.h;
             }
-        };
+        }
         var fontSize = '14px 微软雅黑';
         var ctx = obj.getContext('2d');
         ctx.lineWidth = 2;
@@ -260,7 +425,7 @@ window.onload=function(){
         ctx.strokeStyle = 'black';
         ctx.save();
         ctx.translate(10,10);
-        switch (attr){
+        switch (att){
             case "text":
                 break;
             case "note":
@@ -283,7 +448,7 @@ window.onload=function(){
                 ctx.closePath();
                 break;
             case "round":
-                ctx.arc(wt/2,ht/2,(wt-6)/2,0,2*Math.PI);
+                ctx.arc(wt/2,ht/2,wt/2,0,2*Math.PI);
                 ctx.fill();
                 ctx.stroke();
                 break;
@@ -349,12 +514,12 @@ window.onload=function(){
         ctx.fillStyle='black';
         ctx.textAlign='center';
         ctx.textBaseline='middle';
-        ctx.fillText(_text,wt/2,ht/2);
         ctx.restore();
-        return obj;
-    };
+        this._canvas = obj;
+        this.shape_box.append(this._canvas);
+    }
     //左边栏图片canvas
-    InitDraw.prototype.drawImg=function(obj,src){
+    function drawImg(obj,src){
         var width = obj.width;
         var height = obj.height;
         var ctx = obj.getContext('2d');
@@ -364,8 +529,8 @@ window.onload=function(){
             var pat = ctx.createPattern(drawImage,'no-repeat');
             ctx.fillStyle = pat;
             ctx.fillRect(0,0,width,height);
-        };
-    };
+        }
+    }
     //左边拖拽canvas
     InitDraw.prototype.drawDragCanva=function(obj,c){
         var wt = obj.width;
@@ -377,9 +542,9 @@ window.onload=function(){
         ctx.fillStyle = pat;
         ctx.fillRect(0,0,wt,ht);
         ctx.restore();
-    };
+    }
     var init = new InitDraw();
-
+    
     function uuid() {
         var s = [];
         var hexDigits = "0123456789abcdef";
