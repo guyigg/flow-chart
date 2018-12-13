@@ -400,3 +400,8 @@ function uuid() {
     var uuid = s.join("");
     return uuid;
 }
+//生成连线div
+InitDraw.prototype.lineDiv = function(){
+    var lineId = uuid(); 
+    var oDiv = $("<div id='" + lineId + "'></div>");
+}
