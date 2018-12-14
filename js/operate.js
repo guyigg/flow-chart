@@ -27,6 +27,7 @@ $(function(){
 
     //实例化构造函数
     var draw = new InitDraw();
+    
 
      //左边拖动操作
     var panel_box = $('#panel_basic').children('.panel_box');//左边图形列表
@@ -177,6 +178,16 @@ $(function(){
                 var moveX = ev.clientX;
                 var moveY = ev.clientY;
                 //console.log(moveX);
+                for(var i in arr){
+                    if(arr[i].id != obj.attr('id')){
+                        if(moveX > arr[i].l && moveX < arr[i].l+arr[i].w && moveY > arr[i].t && moveY < arr[i].t+arr[i].h){
+                            var width = arr[i].l - obj.offset().left + obj.width();
+                            console.log(arr[i].l);
+                            //console.log(moveX);
+                            console.log(width);
+                        }
+                    }
+                }
             })
         })
     }

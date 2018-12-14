@@ -233,15 +233,16 @@ InitDraw.prototype.drawDiv = function(){
 }
 //生成连线圆圈功能div
 InitDraw.prototype.funDiv = function(id,w,h,l,t){
-    oDiv = $('<div class="shape_contour" forshape="'+id+'"></div>');
-    oDiv.css({'left':(Number(l) + 10) + 'px','top':(Number(t) + 10) +'px','z-index':this.zindex});
-    var arr = [];
-    var elem = null;
+    
     for(var i in shapeName){
         if(shapeName[i].connect == true && shapeName[i].name == this.att){
-            arr = shapeName[i].connectCircle(w,h);
+            var oDiv = $('<div class="shape_contour" forshape="'+id+'"></div>');
+            oDiv.css({'left':(Number(l) + 10) + 'px','top':(Number(t) + 10) +'px','z-index':this.zindex});
+            //var arr = [];
+            //var elem = null;
+            var arr = shapeName[i].connectCircle(w,h);
             for(var j = 0;j < arr.length; j ++){
-                elem = $('<div class="shape_anchor"></div>');
+                var elem = $('<div class="shape_anchor"></div>');
                 elem.css({'left':arr[j].left,'top':arr[j].top,'z-index':this.zindex});
                 oDiv.append(elem);
             }
