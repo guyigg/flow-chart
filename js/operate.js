@@ -178,18 +178,25 @@ $(function(){
                 var moveX = ev.clientX;
                 var moveY = ev.clientY;
                 //console.log(moveX);
+                
                 for(var i in arr){
                     if(arr[i].id != obj.attr('id')){
                         if(moveX > arr[i].l && moveX < arr[i].l+arr[i].w && moveY > arr[i].t && moveY < arr[i].t+arr[i].h){
-                            var width = arr[i].l - obj.offset().left + obj.width();
-                            console.log(arr[i].l);
+                            var _width = arr[i].l - obj.offset().left + obj.width();
+                            _width = _width > 0 ? _width : 
+                            //var left = arr[i].l
+                            //console.log(arr[i].l);
                             //console.log(moveX);
                             console.log(width);
                         }
                     }
                 }
+            }).on('mouseup',function(){
+                $(document).unbind('mousemove');
+                $(obj).unbind('mousedown');
             })
         })
+        return false;//阻止文字默认拖拽事件触发
     }
 
 })

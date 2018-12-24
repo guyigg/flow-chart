@@ -233,7 +233,6 @@ InitDraw.prototype.drawDiv = function(){
 }
 //生成连线圆圈功能div
 InitDraw.prototype.funDiv = function(id,w,h,l,t){
-    
     for(var i in shapeName){
         if(shapeName[i].connect == true && shapeName[i].name == this.att){
             var oDiv = $('<div class="shape_contour" forshape="'+id+'"></div>');
