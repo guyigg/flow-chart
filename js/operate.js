@@ -25,10 +25,9 @@ $(function(){
     var _layoutInitH = designer_layout.scrollTop = designer_canvas.offsetTop-10;
     var _layoutInitW = designer_layout.scrollLeft = designer_canvas.offsetLeft-10;
 
-    //实例化构造函数
+    //实例化构造画布函数
     var draw = new InitDraw();
     
-
      //左边拖动操作
     var panel_box = $('#panel_basic').children('.panel_box');//左边图形列表
     $('#shape_panel').css('height',h+'px');
@@ -39,7 +38,7 @@ $(function(){
             }
         }
     });
-    
+    //整个图形区域操作
     $('#designer').on('mousedown','#shape_panel .panel_box',function(ev){
         var ev = ev || event;
         var thisBox = $(this);
@@ -88,9 +87,15 @@ $(function(){
                     draw.shape_box.remove();
                 }else{
                     draw.shape_box.css({'z-index':draw.zindex ++});
-                    draw.shape_contour = draw.funDiv(draw.shape_box.attr('id'),dW,dH,draw.divW,draw.divH);//生成连线圆圈功能div
-                    $('#designer_canvas').append(draw.shape_contour);//添加圆圈div
-                    parentMove(draw.shape_box,draw.shape_contour);//绑定鼠标移入移除效果
+                    for(shape_item in shapeName){
+                        if(thisBox.attr('shapename') == shapeName[shape_item].name && shapeName[shape_item].connect == true){
+                            draw.shape_contour = draw.funDiv(draw.shape_box.attr('id'),dW,dH,draw.divW,draw.divH);//生成连线圆圈功能div
+                            $('#designer_canvas').append(draw.shape_contour);//添加圆圈div
+                            parentMove(draw.shape_box,draw.shape_contour);//绑定鼠标移入移除效果
+                        }else{
+                            draw.drag(draw.shape_box); //无连线的图形绑定拖拽事件
+                        }
+                    }
                     if($('.shape_contour').length > 0){//判断shape_contour是否为当前shape_box相对应的
                         $('.shape_contour').each(function(){
                             if($(this).attr('forshape') != draw.shape_box.attr('id')){
@@ -98,7 +103,6 @@ $(function(){
                             }
                         })
                     }
-                    
                 }
             }
             $('#creating_shape_container').css({'display':'none'});
@@ -121,6 +125,7 @@ $(function(){
     		if((disX > left+14 && disX < left-14+width) && (disY > top+14 && disY < top-14+height)){
                 $('#canvas_container').css('cursor','move');
                 obj.unbind('mousedown');
+                //console.log(obj);
                 draw.drag(obj,objFun); //图形和圆圈绑定拖拽事件
     		}else if((disX > left+9 && disX < left-9+width) && (disY > top+9 && disY < top-9+height)){
     			$('#canvas_container').css('cursor','crosshair');
@@ -140,14 +145,14 @@ $(function(){
     	});
     	$('.shape_contour').on('mouseover',function(){
     		$(this).show();
-    		$('#canvas_container').css('cursor','crosshair');
+            $('#canvas_container').css('cursor','crosshair');
     	})
     	$(obj).on('mouseout',function(){
     		$('#canvas_container').css('cursor','default');
     		if($('.shape_contour').length > 1){
-    			$('.shape_contour').each(function(){
-    				if($(this).attr('forshape') != draw.shape_contour.attr('forshape')){
-	    				$(this).hide();
+    			$('.shape_contour').each(function(i,el){
+    				if($(el).attr('forshape') != draw.shape_contour.attr('forshape')){
+                        $(el).hide();
 	    			}
     			})
     		}
@@ -161,6 +166,12 @@ $(function(){
             var disY = ev.clientY;
             var arr = [];
             var arrs = $('.shape_box');
+            var lineDiv = draw.lineDiv();
+            
+            if(disX > obj.offset().left){
+                lineDiv.css({'left':obj[0].offsetLeft+obj.width()-30,'top':obj[0].offsetTop+(obj.height()-10)/2,'z-index':draw.zindex})
+            }
+            console.log(lineDiv);
             for(var i = 0;i<arrs.length;i++){
                 var son = {
                     id:$(arrs[i]).attr('id'),
@@ -171,29 +182,29 @@ $(function(){
                 };
                 arr.push(son);
             }
-            console.log(arr);
-            console.log(disX);
+            
             $(document).on('mousemove',function(ev){
                 var ev = ev || event;
                 var moveX = ev.clientX;
                 var moveY = ev.clientY;
+                $('#designer_canvas').append(lineDiv);
                 //console.log(moveX);
-                
                 for(var i in arr){
                     if(arr[i].id != obj.attr('id')){
                         if(moveX > arr[i].l && moveX < arr[i].l+arr[i].w && moveY > arr[i].t && moveY < arr[i].t+arr[i].h){
                             var _width = arr[i].l - obj.offset().left + obj.width();
-                            _width = _width > 0 ? _width : 
+                            //_width = _width > 0 ? _width : 
                             //var left = arr[i].l
                             //console.log(arr[i].l);
                             //console.log(moveX);
-                            console.log(width);
+                            console.log(_width);
                         }
                     }
                 }
+
             }).on('mouseup',function(){
                 $(document).unbind('mousemove');
-                $(obj).unbind('mousedown');
+                //$(obj).unbind('mousedown');
             })
         })
         return false;//阻止文字默认拖拽事件触发

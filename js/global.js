@@ -176,7 +176,7 @@ function drawCanva(obj){
         ctx.stroke();
     };
     i = 0.5,
-        g = 0;
+    g = 0;
     while(i <= sw) {
         ctx.restore();
         if(g % 4 == 0) {
@@ -192,7 +192,33 @@ function drawCanva(obj){
         ctx.stroke();
     };
 };
+//左边栏图片canvas
+function drawImg(obj,src){
+    var width = obj.width;
+    var height = obj.height;
+    var ctx = obj.getContext('2d');
+    var drawImage = new Image();
+    drawImage.src = src;
+    drawImage.onload=function(){
+        var pat = ctx.createPattern(drawImage,'no-repeat');
+        ctx.fillStyle = pat;
+        ctx.fillRect(0,0,width,height);
+    }
+}
+//生成uuid
+function uuid() {
+    var s = [];
+    var hexDigits = "0123456789abcdef";
+    for (var i = 0; i < 13; i++) {
+        s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+    }
+    s[14] = "4";  // bits 12-15 of the time_hi_and_version field to 0010
+    s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);  // bits 6-7 of the clock_seq_hi_and_reserved to 01
+    s[8] = s[13] = s[18] = s[23];
 
+    var uuid = s.join("");
+    return uuid;
+}
 //画布操作构造函数
 function InitDraw(){
     this.shape_box = null,
@@ -204,50 +230,22 @@ function InitDraw(){
     this.att = null,
     this.arrBox = [];
 }
-
-//画布内拖拽
-InitDraw.prototype.drag = function(obj,objFun){
-    obj.on('mousedown',function(ev){
-        var ev = ev || event;
-        var disX = ev.clientX - this.offsetLeft;
-        var disY = ev.clientY - this.offsetTop;
-        $(document).on('mousemove',function(ev){
-            var ev = ev || event;
-            var L = ev.clientX - disX;
-            var T = ev.clientY - disY;
-            obj.css({'left':L,'top':T});
-            objFun.css({'left':L+10,'top':T+10});
-        })
-        $(document).on('mouseup',function(){
-            obj.off('mousedown');
-            $(document).off('mousemove');
-            objFun.show().siblings('.shape_contour').hide();
-        })
-        return false; //阻止文字默认拖拽
-    })
+//左边拖拽canvas
+InitDraw.prototype.drawDragCanva=function(obj,c){
+    var wt = obj.width;
+    var ht = obj.height;
+    var ctx = obj.getContext('2d');
+    ctx.save();
+    ctx.clearRect(0,0,wt,ht);
+    var pat = ctx.createPattern(c,'no-repeat');
+    ctx.fillStyle = pat;
+    ctx.fillRect(0,0,wt,ht);
+    ctx.restore();
 }
 //生成图形div
 InitDraw.prototype.drawDiv = function(){
     var id = uuid();
     this.shape_box = $('<div id='+id+' class="shape_box"><textarea class="text_canvas" forshape="'+id+'" >123</textarea></div>');
-}
-//生成连线圆圈功能div
-InitDraw.prototype.funDiv = function(id,w,h,l,t){
-    for(var i in shapeName){
-        if(shapeName[i].connect == true && shapeName[i].name == this.att){
-            var oDiv = $('<div class="shape_contour" forshape="'+id+'"></div>');
-            oDiv.css({'left':(Number(l) + 10) + 'px','top':(Number(t) + 10) +'px','z-index':this.zindex});
-            //var arr = [];
-            //var elem = null;
-            var arr = shapeName[i].connectCircle(w,h);
-            for(var j = 0;j < arr.length; j ++){
-                var elem = $('<div class="shape_anchor"></div>');
-                elem.css({'left':arr[j].left,'top':arr[j].top,'z-index':this.zindex});
-                oDiv.append(elem);
-            }
-        }
-    }
-    return oDiv;
 }
 //生成canvas
 InitDraw.prototype.drawCanvas = function(att){
@@ -261,7 +259,7 @@ InitDraw.prototype.drawCanvas = function(att){
             var ht = shapeName[i].props.h;
         }
     }
-    var fontSize = '14px 微软雅黑';
+    //var fontSize = '14px 微软雅黑';
     var ctx = obj.getContext('2d');
     ctx.lineWidth = 2;
     ctx.fillStyle = '#fff';
@@ -353,55 +351,66 @@ InitDraw.prototype.drawCanvas = function(att){
             break;
     }
     ctx.beginPath();
-    ctx.font = fontSize;
+    //ctx.font = fontSize;
     ctx.fillStyle='black';
-    ctx.textAlign='center';
-    ctx.textBaseline='middle';
+    //ctx.textAlign='center';
+    //ctx.textBaseline='middle';
     ctx.restore();
     this._canvas = obj;
     this.shape_box.append(this._canvas);
 }
-//左边栏图片canvas
-function drawImg(obj,src){
-    var width = obj.width;
-    var height = obj.height;
-    var ctx = obj.getContext('2d');
-    var drawImage = new Image();
-    drawImage.src = src;
-    drawImage.onload=function(){
-        var pat = ctx.createPattern(drawImage,'no-repeat');
-        ctx.fillStyle = pat;
-        ctx.fillRect(0,0,width,height);
-    }
+//画布内拖拽
+InitDraw.prototype.drag = function(obj,objFun){
+    var objFun = objFun || null;
+    obj.on('mousedown',function(ev){
+        var ev = ev || event;
+        var disX = ev.clientX - this.offsetLeft;
+        var disY = ev.clientY - this.offsetTop;
+        $(document).on('mousemove',function(ev){
+            var ev = ev || event;
+            var L = ev.clientX - disX;
+            var T = ev.clientY - disY;
+            obj.css({'left':L,'top':T});
+            if(objFun){
+                objFun.css({'left':L+10,'top':T+10});
+            }
+        })
+        $(document).on('mouseup',function(){
+            $(document).off('mousemove').off('mouseup');
+            if(objFun){
+                objFun.show().siblings('.shape_contour').hide();
+            }
+        })
+        return false; //阻止文字默认拖拽
+    })
 }
-//左边拖拽canvas
-InitDraw.prototype.drawDragCanva=function(obj,c){
-    var wt = obj.width;
-    var ht = obj.height;
-    var ctx = obj.getContext('2d');
-    ctx.save();
-    ctx.clearRect(0,0,wt,ht);
-    var pat = ctx.createPattern(c,'no-repeat');
-    ctx.fillStyle = pat;
-    ctx.fillRect(0,0,wt,ht);
-    ctx.restore();
-}
-//生成uuid
-function uuid() {
-    var s = [];
-    var hexDigits = "0123456789abcdef";
-    for (var i = 0; i < 13; i++) {
-        s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+//生成连线圆圈功能div
+InitDraw.prototype.funDiv = function(id,w,h,l,t){
+    for(var i in shapeName){
+        if(shapeName[i].connect == true && shapeName[i].name == this.att){
+            var oDiv = $('<div class="shape_contour" forshape="'+id+'"></div>');
+            oDiv.css({'left':(Number(l) + 10) + 'px','top':(Number(t) + 10) +'px','z-index':this.zindex});
+            var arr = shapeName[i].connectCircle(w,h);
+            for(var j = 0;j < arr.length; j ++){
+                var elem = $('<div class="shape_anchor"></div>');
+                elem.css({'left':arr[j].left,'top':arr[j].top,'z-index':this.zindex});
+                oDiv.append(elem);
+            }
+        }
     }
-    s[14] = "4";  // bits 12-15 of the time_hi_and_version field to 0010
-    s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);  // bits 6-7 of the clock_seq_hi_and_reserved to 01
-    s[8] = s[13] = s[18] = s[23];
-
-    var uuid = s.join("");
-    return uuid;
+    return oDiv;
 }
 //生成连线div
 InitDraw.prototype.lineDiv = function(){
     var lineId = uuid(); 
-    var oDiv = $("<div id='" + lineId + "'></div>");
+    var oDiv = $("<div id='" + lineId + "' class='shape_box linker_box'></div>");
+    return oDiv;
+}
+InitDraw.prototype.dragLineCanvas = function(w,h){
+    var oCanvas = $("<canvas class = 'shape_canvas'></canvas>");
+    oCanvas.width = w;
+    oCanvas.height = h;
+    var ctx = oCanvas.getContext('2d');
+
+
 }
