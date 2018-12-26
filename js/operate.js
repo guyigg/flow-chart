@@ -41,6 +41,7 @@ $(function(){
     //整个图形区域操作
     $('#designer').on('mousedown','#shape_panel .panel_box',function(ev){
         var ev = ev || event;
+        ev.preventDefault();//阻止文字默认拖拽事件触发
         var thisBox = $(this);
         var parentW = thisBox.parents('#shape_panel').width();
         var parentH = thisBox.parents('#shape_panel').height();
@@ -109,13 +110,13 @@ $(function(){
             designer.onmousemove = null;
             off = true;
         }
-        return false;//阻止文字默认拖拽事件触发
     });
 
     //鼠标移入移出
     function parentMove(obj,objFun){
     	$(obj).on('mousemove',function(ev){
-    		var ev = ev || event;
+            var ev = ev || event;
+            ev.preventDefault();//阻止文字默认拖拽事件触发
     		var disX = ev.clientX;
     		var disY = ev.clientY;
     		var left = $(this).offset().left;
@@ -158,11 +159,11 @@ $(function(){
     		}
     	})
     }
-    //待定
-    var dd;
+    //鼠标拖动画线功能
     function createLine(obj){
         obj.on('mousedown',function(ev){
             var ev = ev || event;
+            ev.preventDefault();//阻止文字默认拖拽事件触发
             var disX = ev.clientX;
             var disY = ev.clientY;
             var arr = [];
@@ -171,8 +172,8 @@ $(function(){
             var lineW = null;
             var lineH = null;
             if(disX > obj.offset().left){
-                lineW = obj[0].offsetLeft + obj.width() - 30;
-                lineH = obj[0].offsetTop + (obj.height() - 10)/2;
+                lineW = obj[0].offsetLeft + obj.width() - 20;
+                lineH = obj[0].offsetTop + (obj.height() - 18)/2;
             }
             for(var i = 0;i<arrs.length;i++){
                 var son = {
@@ -184,47 +185,56 @@ $(function(){
                 };
                 arr.push(son);
             }
-            
+            var lineDiv = draw.lineDiv();
+            var lineCanvas = document.createElement('canvas');
+            lineDiv.append(lineCanvas);
             $(document).on('mousemove',function(ev){
                 var ev = ev || event;
                 var moveX = ev.clientX;
                 var moveY = ev.clientY;
-                //console.log('lineW:'+lineW);
-                //console.log('moveX:'+moveX);
+                lineDiv.css({'left':lineW,'top':lineH});
+                $('#designer_canvas').append(lineDiv);
+                var _width = moveX - lineDiv.offset().left;
+                var _hegiht  = moveY - lineDiv.offset().top;
+                console.log(_hegiht);
                 for(var i in arr){
                     if(arr[i].id != obj.attr('id')){
                         if(moveX > arr[i].l && moveX < arr[i].l+arr[i].w && moveY > arr[i].t && moveY < arr[i].t+arr[i].h){
-                            var _width = arr[i].l - obj.offset().left + obj.width();
+                            _width = arr[i].l - obj.offset().left + obj.width();
                             //_width = _width > 0 ? _width : 
                             //var left = arr[i].l
                             //console.log(arr[i].l);
                             //console.log(moveX);
-                            console.log(arr[i].id);
+                            //console.log(arr[i].id);
                         }
                     }
                 }
-                //console.log(moveX);
-                // if(off){
-                    var lineDiv = draw.lineDiv(moveX-lineW,20,lineW);
-                    lineDiv.css({'left':lineW,
-                            'top':lineH,
-                            'z-index':draw.zindex,
-                            'width':moveX-lineW,
-                            'height':20
-                        })
-                    $('#designer_canvas').append(lineDiv);
-                //     off != off;
-                // }
-                dd = moveX;
+                lineDiv.css({
+                        'z-index':draw.zindex-1,
+                        'width':_width,
+                        'height':20
+                    })
+                //console.log('moveX:'+moveX);
+                //console.log('left:'+lineDiv.offset().left);
+                //console.log('_width:'+_width);
+                line(lineCanvas,_width,20);
             })
-            
             $(document).on('mouseup',function(){
                 $(document).unbind('mousemove');
                 //$(obj).unbind('mousedown');
             })
         })
-        return false;//阻止文字默认拖拽事件触发
+        function line(obj,w,h){
+            //console.log('canvas:'+w);
+            obj.width = w;
+            obj.height = h;
+            var ctx = obj.getContext('2d');
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(10,10);
+            ctx.lineTo(w-10,h-10);
+            ctx.stroke();
+        }
     }
-    console.log(dd);
-
+    
 })

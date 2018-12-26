@@ -364,6 +364,7 @@ InitDraw.prototype.drag = function(obj,objFun){
     var objFun = objFun || null;
     obj.on('mousedown',function(ev){
         var ev = ev || event;
+        ev.preventDefault();//阻止文字默认拖拽事件触发
         var disX = ev.clientX - this.offsetLeft;
         var disY = ev.clientY - this.offsetTop;
         $(document).on('mousemove',function(ev){
@@ -381,7 +382,6 @@ InitDraw.prototype.drag = function(obj,objFun){
                 objFun.show().siblings('.shape_contour').hide();
             }
         })
-        return false; //阻止文字默认拖拽
     })
 }
 //生成连线圆圈功能div
@@ -401,16 +401,13 @@ InitDraw.prototype.funDiv = function(id,w,h,l,t){
     return oDiv;
 }
 //生成连线div
-InitDraw.prototype.lineDiv = function(w,h,b){
+InitDraw.prototype.lineDiv = function(){
     var lineId = uuid(); 
     var oDiv = $("<div id='" + lineId + "' class='shape_box linker_box'></div>");
-    var lineCanvas = this.dragLineCanvas(w,h,b);
-    oDiv.append(lineCanvas);
     return oDiv;
 }
 InitDraw.prototype.dragLineCanvas = function(w,h,b){
     var oCanvas = document.createElement('canvas');
-    //console.log(w);
     oCanvas.width = w;
     oCanvas.height = h;
     var ctx = oCanvas.getContext('2d');
