@@ -401,16 +401,23 @@ InitDraw.prototype.funDiv = function(id,w,h,l,t){
     return oDiv;
 }
 //生成连线div
-InitDraw.prototype.lineDiv = function(){
+InitDraw.prototype.lineDiv = function(w,h,b){
     var lineId = uuid(); 
     var oDiv = $("<div id='" + lineId + "' class='shape_box linker_box'></div>");
+    var lineCanvas = this.dragLineCanvas(w,h,b);
+    oDiv.append(lineCanvas);
     return oDiv;
 }
-InitDraw.prototype.dragLineCanvas = function(w,h){
-    var oCanvas = $("<canvas class = 'shape_canvas'></canvas>");
+InitDraw.prototype.dragLineCanvas = function(w,h,b){
+    var oCanvas = document.createElement('canvas');
+    //console.log(w);
     oCanvas.width = w;
     oCanvas.height = h;
     var ctx = oCanvas.getContext('2d');
-
-
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(10,10);
+    ctx.lineTo(w-10,h-10);
+    ctx.stroke();
+    return oCanvas;
 }

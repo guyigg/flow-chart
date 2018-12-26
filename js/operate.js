@@ -73,7 +73,7 @@ $(function(){
                 draw.divH = Math.round(layoutNewH)-_layoutInitH >= 0 ? ev.clientY-headerH-10-dH/2 : ev.clientY-differH-dH/2;
                 draw.divW = Math.round(layoutNewW)-_layoutInitW >= 0 ? ev.clientX-parentW-10-dW/2 : ev.clientX-differW-dH/2;
                 draw.shape_box.css({'left':draw.divW + 'px','top':draw.divH + 'px'});
-                draw.shape_box.attr({'divW':draw.divW,'divH':draw.divH});
+                //draw.shape_box.attr({'divW':draw.divW,'divH':draw.divH});
                 if(off){
                     $('#designer_canvas').append(draw.shape_box);
                     off = !off;
@@ -159,6 +159,7 @@ $(function(){
     	})
     }
     //待定
+    var dd;
     function createLine(obj){
         obj.on('mousedown',function(ev){
             var ev = ev || event;
@@ -166,12 +167,13 @@ $(function(){
             var disY = ev.clientY;
             var arr = [];
             var arrs = $('.shape_box');
-            var lineDiv = draw.lineDiv();
-            
+            var off = true;
+            var lineW = null;
+            var lineH = null;
             if(disX > obj.offset().left){
-                lineDiv.css({'left':obj[0].offsetLeft+obj.width()-30,'top':obj[0].offsetTop+(obj.height()-10)/2,'z-index':draw.zindex})
+                lineW = obj[0].offsetLeft + obj.width() - 30;
+                lineH = obj[0].offsetTop + (obj.height() - 10)/2;
             }
-            console.log(lineDiv);
             for(var i = 0;i<arrs.length;i++){
                 var son = {
                     id:$(arrs[i]).attr('id'),
@@ -187,8 +189,8 @@ $(function(){
                 var ev = ev || event;
                 var moveX = ev.clientX;
                 var moveY = ev.clientY;
-                $('#designer_canvas').append(lineDiv);
-                //console.log(moveX);
+                //console.log('lineW:'+lineW);
+                //console.log('moveX:'+moveX);
                 for(var i in arr){
                     if(arr[i].id != obj.attr('id')){
                         if(moveX > arr[i].l && moveX < arr[i].l+arr[i].w && moveY > arr[i].t && moveY < arr[i].t+arr[i].h){
@@ -197,17 +199,32 @@ $(function(){
                             //var left = arr[i].l
                             //console.log(arr[i].l);
                             //console.log(moveX);
-                            console.log(_width);
+                            console.log(arr[i].id);
                         }
                     }
                 }
-
-            }).on('mouseup',function(){
+                //console.log(moveX);
+                // if(off){
+                    var lineDiv = draw.lineDiv(moveX-lineW,20,lineW);
+                    lineDiv.css({'left':lineW,
+                            'top':lineH,
+                            'z-index':draw.zindex,
+                            'width':moveX-lineW,
+                            'height':20
+                        })
+                    $('#designer_canvas').append(lineDiv);
+                //     off != off;
+                // }
+                dd = moveX;
+            })
+            
+            $(document).on('mouseup',function(){
                 $(document).unbind('mousemove');
                 //$(obj).unbind('mousedown');
             })
         })
         return false;//阻止文字默认拖拽事件触发
     }
+    console.log(dd);
 
 })
