@@ -166,6 +166,9 @@ ul {
 .shape_box{
     position: absolute;
 }
+.linker_box{
+    position: absolute;
+}
 .text_canvas{
     position: absolute;
     padding: 0;

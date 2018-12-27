@@ -248,18 +248,17 @@ InitDraw.prototype.drawDiv = function(){
     this.shape_box = $('<div id='+id+' class="shape_box"><textarea class="text_canvas" forshape="'+id+'" >123</textarea></div>');
 }
 //生成canvas
-InitDraw.prototype.drawCanvas = function(att){
+InitDraw.prototype.drawCanvas = function(att,w,h){
     this.att = att;
     var obj = document.createElement('canvas');
     for(var i in shapeName){
         if(shapeName[i].name == att ){
-            obj.width = shapeName[i].props.w+20;
-            obj.height = shapeName[i].props.h+20;
-            var wt = shapeName[i].props.w;
-            var ht = shapeName[i].props.h;
+            obj.width = w || shapeName[i].props.w+20;
+            obj.height = w || shapeName[i].props.h+20;
+            var wt = w || shapeName[i].props.w;
+            var ht = h || shapeName[i].props.h;
         }
     }
-    //var fontSize = '14px 微软雅黑';
     var ctx = obj.getContext('2d');
     ctx.lineWidth = 2;
     ctx.fillStyle = '#fff';
@@ -403,7 +402,7 @@ InitDraw.prototype.funDiv = function(id,w,h,l,t){
 //生成连线div
 InitDraw.prototype.lineDiv = function(){
     var lineId = uuid(); 
-    var oDiv = $("<div id='" + lineId + "' class='shape_box linker_box'></div>");
+    var oDiv = $("<div id='" + lineId + "' class='linker_box'></div>");
     return oDiv;
 }
 InitDraw.prototype.dragLineCanvas = function(w,h,b){

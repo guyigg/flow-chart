@@ -128,7 +128,7 @@ $(function(){
                 obj.unbind('mousedown');
                 //console.log(obj);
                 draw.drag(obj,objFun); //图形和圆圈绑定拖拽事件
-    		}else if((disX > left+9 && disX < left-9+width) && (disY > top+9 && disY < top-9+height)){
+    		}else if((disX > left+8 && disX < left-8+width) && (disY > top+8 && disY < top-8+height)){
     			$('#canvas_container').css('cursor','crosshair');
                 obj.unbind('mousedown');
                 createLine(obj);
@@ -171,10 +171,7 @@ $(function(){
             var off = true;
             var lineW = null;
             var lineH = null;
-            if(disX > obj.offset().left){
-                lineW = obj[0].offsetLeft + obj.width() - 20;
-                lineH = obj[0].offsetTop + (obj.height() - 18)/2;
-            }
+            var pos = position(obj,disX,disY);
             for(var i = 0;i<arrs.length;i++){
                 var son = {
                     id:$(arrs[i]).attr('id'),
@@ -192,48 +189,116 @@ $(function(){
                 var ev = ev || event;
                 var moveX = ev.clientX;
                 var moveY = ev.clientY;
+                var _width = null;
+                var _height  = null;
+                if(pos == 'right'){
+                    lineW = obj[0].offsetLeft + obj.width() - 10;
+                    lineH = obj[0].offsetTop + (obj.height() - 18)/2;
+                    _width = moveX - (lineDiv.offset().left==0?moveX:lineDiv.offset().left);
+                    _height  = moveY - (lineDiv.offset().top==0?moveY:lineDiv.offset().top);
+                    if(moveY-headerH-10 < lineH){
+                        lineH = moveY-headerH-10;
+                        _height  = (obj[0].offsetTop + (obj.height() - 18)/2 - lineH).toString();
+                    }
+                    //console.log(lineH);
+                }else if(pos == 'left'){
+                    lineW = moveX - $('#shape_panel').width() -10;
+                    lineH = moveY - headerH -10;
+                    _width = (lineDiv.offset().left==0?moveX:lineDiv.offset().left) - moveX;
+                    _height  = (lineDiv.offset().top==0?moveY:lineDiv.offset().top) - moveY;
+                }else if(pos == 'top'){
+                    lineW = moveX - $('#shape_panel').width() -10;
+                    lineH = moveY - headerH -10;
+                }else if(pos == 'bottom'){
+                    lineW = obj[0].offsetLeft + (obj.width() - 18)/2;
+                    lineH = obj[0].offsetTop + obj.height() - 10;
+                }
                 lineDiv.css({'left':lineW,'top':lineH});
                 $('#designer_canvas').append(lineDiv);
-                var _width = moveX - lineDiv.offset().left;
-                var _hegiht  = moveY - lineDiv.offset().top;
-                console.log(_hegiht);
+                
+                //console.log(pos);
                 for(var i in arr){
                     if(arr[i].id != obj.attr('id')){
-                        if(moveX > arr[i].l && moveX < arr[i].l+arr[i].w && moveY > arr[i].t && moveY < arr[i].t+arr[i].h){
-                            _width = arr[i].l - obj.offset().left + obj.width();
+                        if(moveX > arr[i].l+10 && moveX < arr[i].l+arr[i].w-10 && moveY > arr[i].t && moveY < arr[i].t+arr[i].h){
+                            _width = arr[i].l - obj.offset().left - obj.width() + 20;
                             //_width = _width > 0 ? _width : 
                             //var left = arr[i].l
-                            //console.log(arr[i].l);
-                            //console.log(moveX);
-                            //console.log(arr[i].id);
+                            // console.log(arr[i].l);
+                            // console.log(obj.offset().left + obj.width());
+                            // console.log(lineDiv.offset().left);
+                        }else if(moveX > arr[i].l+arr[i].w){
+                            console.log(1);
                         }
                     }
                 }
                 lineDiv.css({
                         'z-index':draw.zindex-1,
                         'width':_width,
-                        'height':20
+                        'height':_height
                     })
-                //console.log('moveX:'+moveX);
-                //console.log('left:'+lineDiv.offset().left);
-                //console.log('_width:'+_width);
-                line(lineCanvas,_width,20);
+                line(lineCanvas,_width,_height,pos);
             })
             $(document).on('mouseup',function(){
+                lineDiv.attr('form',obj.attr('id'));
                 $(document).unbind('mousemove');
                 //$(obj).unbind('mousedown');
             })
         })
-        function line(obj,w,h){
-            //console.log('canvas:'+w);
+        function line(obj,w,h,pos){
+            //console.log('canvas:'+h);
             obj.width = w;
-            obj.height = h;
+            obj.height = 20;
             var ctx = obj.getContext('2d');
             ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(10,10);
-            ctx.lineTo(w-10,h-10);
-            ctx.stroke();
+            ctx.save();
+            if(pos == 'right'){
+                if(w > 0){
+                    console.log(typeof h);
+                    if(h > 10){
+                        obj.width = w;
+                        obj.height = h;
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(0,10);
+                        ctx.lineTo(w/2,10);
+                        ctx.lineTo(w/2,h-10);
+                        ctx.lineTo(w,h-10);
+                        ctx.stroke();
+                    }else if(h >= 0 && h <= 10){
+                        ctx.beginPath();
+                        ctx.moveTo(0,10);
+                        ctx.lineTo(w,h-10);
+                        ctx.stroke();
+                    }else if(typeof(h) == string){
+                        //console.log(-h);
+                        h = Number(h);
+                        obj.width = w;
+                        obj.height = -h;
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(0,h-10);
+                        // ctx.lineTo(w/2,10);
+                        // ctx.lineTo(w/2,10-h);
+                        ctx.lineTo(w,10);
+                        ctx.stroke();
+                    }
+                }
+            }
+            
+            ctx.restore();
+        }
+        function position(obj,x,y){//判断鼠标点下去的位置
+            var pos = '';
+            if(x < obj.offset().left+12){
+                pos = 'left';
+            }else if(x > obj.offset().left+obj.width()-12 && x < obj.offset().left+obj.width()){
+                pos = 'right';
+            }else if(y < obj.offset().top+12){
+                pos = 'top';
+            }else if(y > obj.offset().top+obj.height()-12 && y < obj.offset().top+obj.height()){
+                pos = 'bottom';
+            }
+            return pos;
         }
     }
     
