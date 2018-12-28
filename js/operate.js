@@ -269,7 +269,7 @@ $(function(){
                         ctx.moveTo(0,10);
                         ctx.lineTo(w,h-10);
                         ctx.stroke();
-                    }else if(typeof(h) == string){
+                    }else if(typeof(h) == 'string'){
                         //console.log(-h);
                         h = Number(h);
                         obj.width = w;
